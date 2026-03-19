@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>iNaturalist observations in action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green:       #5d8a1a;
+      --green-dark:  #4a6e2e;
+      --green-light: #f0f2e8;
+      --ink:         #222222;
+      --charcoal:    #4a4a4a;
+      --teal:        #00a99d;
+      --amber:       #d48b1a;
+      --cream:       #f5f4ee;
+      --offwhite:    #eeeee6;
+      --white:       #ffffff;
+      --rule:        #ddddd4;
+      --muted:       #4a4a4a;
+      --link:        #4a6e2e;
+      --pad:         clamp(20px, 5vw, 48px);
+      --max:         720px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Libre Baskerville', serif;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--green);
+      padding: 16px var(--pad);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .site-header img {
+      height: 26px;
+      width: auto;
+      filter: brightness(0) invert(1);
+      opacity: 0.95;
+    }
+    .site-header span {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--green);
+      padding: clamp(40px, 8vw, 80px) var(--pad) clamp(48px, 9vw, 96px);
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(1.9rem, 5.5vw, 3.2rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+      max-width: 580px;
+      margin: 0 auto 16px;
+    }
+    .hero p {
+      color: rgba(255,255,255,0.75);
+      font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    /* ── Newsletter section ── */
+    .newsletter-section {
+      background: var(--white);
+      border-bottom: 1px solid var(--rule);
+      padding: clamp(32px, 6vw, 56px) var(--pad);
+    }
+    .newsletter-section .inner {
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+    .section-eyebrow {
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+    .newsletter-section h2 {
+      font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+      color: var(--ink);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .newsletter-section .sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+    }
+
+    /* Virtuous embed — constrain firmly */
+    .vform-host {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    .vform-host > * {
+      max-width: 100% !important;
+    }
+
+    /* ── Stories ── */
+    .stories {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: clamp(40px, 8vw, 72px) var(--pad);
+    }
+    .stories > .section-eyebrow {
+      display: block;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .story {
+      background: var(--white);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+      margin-bottom: clamp(40px, 7vw, 64px);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .story.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .story-image {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: var(--green-light);
+    }
+    .story-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .story:hover .story-image img {
+      transform: scale(1.025);
+    }
+
+    .story-body {
+      padding: clamp(22px, 5vw, 36px);
+    }
+    .story-body h2 {
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    .story-body p {
+      font-size: clamp(0.88rem, 2.2vw, 0.97rem);
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+    .story-link {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--green-dark);
+      text-decoration: none;
+      border-bottom: 1.5px solid var(--rule);
+      padding-bottom: 2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .story-link:hover {
+      color: var(--green-dark);
+      border-color: var(--green-dark);
+    }
+
+    /* ── Stats ── */
+    .stats-section {
+      background: var(--green);
+      padding: clamp(48px, 8vw, 80px) var(--pad);
+    }
+    .stats-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+    .stats-image {
+      width: 100%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: clamp(28px, 5vw, 40px);
+      background: var(--green-dark);
+    }
+    .stats-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .stats-section .section-eyebrow {
+      color: rgba(255,255,255,0.7);
+    }
+    .stats-section h2 {
+      font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+      color: #fff;
+      margin-bottom: 16px;
+      margin-top: 8px;
+      line-height: 1.3;
+    }
+    .stats-section p {
+      color: rgba(255,255,255,0.8);
+      font-size: clamp(0.88rem, 2.2vw, 0.97rem);
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+    .stat-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+    .stat-pill {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 40px;
+      padding: 7px 16px;
+      color: #fff;
+      font-size: 0.83rem;
+    }
+    .stat-pill strong { font-weight: 700; }
+
+    /* ── About ── */
+    .about-section {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: clamp(48px, 8vw, 80px) var(--pad);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(24px, 5vw, 40px);
+      align-items: center;
+    }
+    @media (min-width: 600px) {
+      .about-section { grid-template-columns: 1fr 1fr; }
+    }
+    .about-image {
+      width: 100%;
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--green-light);
+    }
+    .about-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .about-body h2 {
+      font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+      color: var(--ink);
+      margin-bottom: 12px;
+      margin-top: 8px;
+      line-height: 1.3;
+    }
+    .about-body p {
+      font-size: clamp(0.88rem, 2.2vw, 0.97rem);
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--green);
+      color: #fff;
+      text-decoration: none;
+      padding: 11px 22px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: 'Lato', sans-serif;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--green-dark); }
+
+    /* ── Donate CTA ── */
+    .cta-section {
+      background: var(--offwhite);
+      border-top: 1px solid var(--rule);
+      padding: clamp(48px, 8vw, 80px) var(--pad);
+      text-align: center;
+    }
+    .cta-section .inner {
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    .cta-image {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 28px;
+      background: var(--rule);
+    }
+    .cta-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      color: var(--ink);
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+    .cta-section p {
+      font-size: clamp(0.88rem, 2.2vw, 0.97rem);
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+    .btn-donate {
+      display: inline-block;
+      background: var(--green);
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'Lato', sans-serif;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-donate:hover {
+      background: var(--green-dark);
+      transform: translateY(-1px);
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--ink);
+      padding: 22px var(--pad);
+      text-align: center;
+    }
+    footer p {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.78rem;
+      font-family: 'Lato', sans-serif;
+    }
+    footer a {
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+    }
+    footer a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <img src="https://static.inaturalist.org/assets/inat-logo-white-65d85b3f90.svg" alt="iNaturalist"/>
+    <span>observations in action</span>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Every observation connects to something bigger.</h1>
+    <p>Real science. Real conservation. A community of millions paying attention to the world.</p>
+  </section>
+
+  <!-- Newsletter signup -->
+  <section class="newsletter-section">
+    <div class="inner">
+      <p class="section-eyebrow">Stay connected</p>
+      <h2>Get The Nature Notice</h2>
+      <p class="sub">Stories, science, and dispatches from the natural world — straight to your inbox.</p>
+      <div class="vform-host">
+        <script
+          src="https://cdn.virtuoussoftware.com/virtuous.embed.min.js"
+          data-vform="AF152C0B-5490-4714-B424-0212CA0B2EB0"
+          data-orgId="7273"
+          data-isGiving="false"
+          data-dependencies="[]">
+        </script>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stories -->
+  <section class="stories">
+    <span class="section-eyebrow">Impact stories</span>
+
+    <article class="story">
+      <div class="story-image">
+        <img src="https://static.inaturalist.org/wiki_page_attachments/5064-original.png" alt="Greater chestnut weevil" loading="lazy"/>
+      </div>
+      <div class="story-body">
+        <h2>A beetle back from the dead</h2>
+        <p>For decades, the greater chestnut weevil was considered extinct. When the American chestnut tree was devastated by blight in the early 1900s, scientists assumed its specialist insect had vanished with it — a textbook case of one species taking another down with it.</p>
+        <p>Then, community member Neal Kelso uploaded observations to iNaturalist — which eventually led to further scientific work confirming that the greater chestnut weevil is alive.</p>
+        <p>We only know because someone took a photo.</p>
+        <a href="https://www.youtube.com/shorts/d9XvbtuAsuQ" class="story-link" target="_blank" rel="noopener">Watch the story →</a>
+      </div>
+    </article>
+
+    <article class="story">
+      <div class="story-image">
+        <img src="https://static.inaturalist.org/wiki_page_attachments/5061-original.png" alt="Colombian weasel" loading="lazy"/>
+      </div>
+      <div class="story-body">
+        <h2>First living photos of the elusive Colombian weasel</h2>
+        <p>Juan de Roux first saw something streak across his parents' yard in Cali, Colombia when he was 13 — too fast for a squirrel, too small for anything he could name. Years later, he found the same animal trapped in a bathroom, grabbed his camera, took photos while it moved frantically around the bathroom, then let it go.</p>
+        <p>After a hard drive wipe and a rescue by his mother, the photos finally made it to iNaturalist. The community identified it as a Colombian weasel, possibly the rarest carnivore in South America — with no known photos of a living individual before this one.</p>
+        <a href="https://www.inaturalist.org/blog/20273-the-elusive-colombian-weasel-observation-of-the-week-12-9-18" class="story-link" target="_blank" rel="noopener">Read Juan's full story →</a>
+      </div>
+    </article>
+
+    <article class="story">
+      <div class="story-image">
+        <img src="https://static.inaturalist.org/wiki_page_attachments/5060-original.png" alt="Bomarea plants" loading="lazy"/>
+      </div>
+      <div class="story-body">
+        <h2>A researcher's passion for rule-breaking plants</h2>
+        <p>Alisson Fierro-Minda grew up in Ecuador with no personal transportation and no funding for fieldwork. So she turned to iNaturalist — scrolling through observations of <em>Bomarea</em>, a genus of climbing Andean plants, until she started noticing details that didn't match any known species.</p>
+        <p>She didn't have specimens or a path to publication. What she had was a pattern, and a community: when she reached out to other iNaturalist users, collaborators appeared. That first hunch led to three newly described species.</p>
+        <a href="https://www.inaturalist.org/blog/116058-how-a-researcher-s-passion-for-rule-breaking-plants-led-to-new-species-descriptions" class="story-link" target="_blank" rel="noopener">Read Alisson's full story →</a>
+      </div>
+    </article>
+
+    <article class="story">
+      <div class="story-image">
+        <img src="https://static.inaturalist.org/wiki_page_attachments/5063-original.png" alt="Mammal range maps" loading="lazy"/>
+      </div>
+      <div class="story-body">
+        <h2>Where the maps were wrong</h2>
+        <p>Scientists have long relied on official range maps to understand where mammals live — but those maps are based on older data, and animals move. A research team set out to find out how much had changed, analyzing hundreds of thousands of iNaturalist observations of North American mammals against existing range maps.</p>
+        <p>A substantial share fell entirely outside those ranges — suggesting that many species have expanded where they live, and that the most current maps are being written by community scientists in real time.</p>
+        <a href="https://www.youtube.com/shorts/hC1troLNfoY" class="story-link" target="_blank" rel="noopener">Watch the story →</a>
+      </div>
+    </article>
+
+    <article class="story">
+      <div class="story-image">
+        <img src="https://static.inaturalist.org/wiki_page_attachments/5062-original.png" alt="Woolly devil plant" loading="lazy"/>
+      </div>
+      <div class="story-body">
+        <h2>First new plant species in a U.S. national park since 1976</h2>
+        <p>In March 2024, during a hike with park staff, volunteer Deb Manley spotted tiny, fuzzy plants with maroon petals sprouting between the desert rocks in the remote northern corner of Big Bend National Park. She photographed them and uploaded the observation to iNaturalist, where an international community of botanists assembled — and couldn't identify it.</p>
+        <p>DNA sequencing confirmed what the community suspected: the woolly devil (<em>Ovicula biradiata</em>) was not just a new species but an entirely new genus — the first described in a U.S. national park since 1976. It has only been found in a few small areas of the park, and scientists are already concerned it may be vulnerable to worsening drought in the Chihuahuan Desert. We may have met it just in time.</p>
+        <a href="https://www.youtube.com/shorts/TWimo6KkaLo" class="story-link" target="_blank" rel="noopener">Watch the story →</a>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- Stats -->
+  <section class="stats-section">
+    <div class="stats-inner">
+      <div class="stats-image">
+        <img src="https://static.inaturalist.org/wiki_page_attachments/5065-original.png" alt="iNaturalist community" loading="lazy"/>
+      </div>
+      <p class="section-eyebrow">By the numbers</p>
+      <h2>Anyone, anywhere, with a smartphone</h2>
+      <p>The number of peer-reviewed papers drawing on iNaturalist data has grown dramatically — with nearly 7,000 now citing observations made by community members around the world, helping scientists map species ranges, study climate change, detect invasive species, and discover organisms new to science.</p>
+      <p>iNaturalist now holds more than 300 million verifiable observations — contributed by more than 4 million community members across the world. Those observations contain data on about 25% of all described species on Earth, and the platform contributes more unique species to the Global Biodiversity Information Facility than any other single dataset.</p>
+      <div class="stat-pills">
+        <span class="stat-pill"><strong>300M+</strong> observations</span>
+        <span class="stat-pill"><strong>4M+</strong> community members</span>
+        <span class="stat-pill"><strong>~25%</strong> of all described species</span>
+        <span class="stat-pill"><strong>7,000+</strong> peer-reviewed papers</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about-section">
+    <div class="about-image">
+      <img src="https://static.inaturalist.org/wiki_page_attachments/5066-original.png" alt="About iNaturalist" loading="lazy"/>
+    </div>
+    <div class="about-body">
+      <p class="section-eyebrow">About</p>
+      <h2>About iNaturalist</h2>
+      <p>iNaturalist's mission is to connect people to nature and advance biodiversity science and conservation.</p>
+      <p>We're an independent nonprofit. Our platform is free, our data is open, and our community is global. Every observation shared on iNaturalist becomes part of a living record of life on Earth, accessible to scientists, educators, conservationists, and curious people everywhere.</p>
+      <a href="https://www.inaturalist.org/pages/about" class="btn" target="_blank" rel="noopener">Learn more about iNaturalist →</a>
+    </div>
+  </section>
+
+  <!-- Donate CTA -->
+  <section class="cta-section">
+    <div class="inner">
+      <div class="cta-image">
+        <img src="https://static.inaturalist.org/wiki_page_attachments/5067-original.png" alt="Thank you" loading="lazy"/>
+      </div>
+      <h2>If you've read this far ... thank you!</h2>
+      <p>Every story on this page started with one observation — one person paying attention to the world around them. iNaturalist exists to make sure those moments connect to something bigger: real science, real conservation, and a community of millions doing the same thing, everywhere.</p>
+      <p>This work takes resources to sustain. If iNaturalist has ever helped you know your neighborhood better, contributed to your research, or just made you stop and look at something you'd have walked right past — please consider supporting it.</p>
+      <a href="https://www.inaturalist.org/donate" class="btn-donate" target="_blank" rel="noopener">Donate to iNaturalist →</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© iNaturalist · <a href="https://www.inaturalist.org/pages/about">About</a> · <a href="https://www.inaturalist.org/pages/privacy">Privacy</a></p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.story').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
